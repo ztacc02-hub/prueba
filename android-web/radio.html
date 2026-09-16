@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#12100d">
+  <title>RADIO · FUTBOL UY TV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Manrope:wght@400;600;700;800&family=Rye&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="radio.js" defer></script>
+</head>
+<body class="radio-page">
+  <main class="radio-shell">
+    <header class="site-header radio-header">
+      <a class="brand" href="/" aria-label="Volver a FUTBOL UY TV"><span class="brand-mark">⚽</span><span><b>FUTBOL UY TV</b><small>RADIO EN VIVO</small></span></a>
+      <div class="header-tools"><span class="radio-live"><i class="live-dot"></i> AL AIRE</span><a class="tab-button" href="/antel.html">ANTEL TV</a><a class="tab-button" href="/mi-lista.html">＋ MI LISTA</a><a class="tab-button" href="/">← TV</a></div>
+    </header>
+    <section class="radio-hero">
+      <div class="radio-copy"><span class="radio-kicker">DESDE EL ÉTER</span><h1>La radio<br><em>de siempre.</em></h1><p>Noticias, música y compañía uruguaya. Sintonizá una emisora y dejá que la tarde haga lo suyo.</p><div class="radio-rule"></div><span class="radio-frequency">FM · AM · INTERNACIONAL</span></div>
+      <div class="radio-console" aria-label="Reproductor de radio">
+        <div class="console-top"><span>FUTBOL UY</span><b>RADIO</b><span id="radio-clock">00:00</span></div>
+        <div class="dial-window"><span>88</span><i></i><strong id="radio-frequency">--.--</strong><i></i><span>108</span><div class="dial-line"></div></div>
+        <div class="console-display"><small id="radio-status">SELECCIONÁ UNA EMISORA</small><strong id="radio-title">RADIO EN ESPERA</strong></div>
+        <div class="console-controls"><button id="radio-play" type="button" aria-label="Reproducir o pausar">▶</button><div class="tuning-lights"><i></i><i></i><i></i><span>STEREO</span></div><label>VOL<input id="radio-volume" type="range" min="0" max="1" step=".05" value=".8" aria-label="Volumen de radio"></label></div>
+        <audio id="radio-audio" preload="none"></audio>
+      </div>
+    </section>
+    <section class="radio-library">
+      <div class="radio-section-head"><div><span class="radio-kicker">SINTONIZADOR</span><h2>Emisoras en vivo</h2></div><label class="radio-search"><span>⌕</span><input id="radio-search" type="search" placeholder="Buscar emisora..." autocomplete="off"></label></div>
+      <nav class="radio-tabs" id="radio-tabs" aria-label="Categorías de radio"></nav>
+      <div class="station-grid" id="station-grid"></div>
+    </section>
+    <footer>FUTBOL UY TV · Radio en directo</footer>
+  </main>
+</body>
+</html>

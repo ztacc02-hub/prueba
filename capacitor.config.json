@@ -1,0 +1,8 @@
+{
+  "appId": "uy.futbol.tv",
+  "appName": "FUTBOL UY TV",
+  "webDir": "android-web",
+  "server": {
+    "androidScheme": "https"
+  }
+}

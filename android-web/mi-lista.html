@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090a0d">
+  <title>MI LISTA · FUTBOL UY TV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body data-page="my-list">
+  <div class="splash" id="splash" aria-label="Cargando mi lista"><div class="splash-content"><div class="tv-icon">⚽</div><h1>MI LISTA</h1><div class="loader"><span></span></div></div></div>
+  <main class="app-shell">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Volver a FUTBOL UY TV"><span class="brand-mark">⚽</span><span><b>FUTBOL UY TV</b><small>MI LISTA PRIVADA</small></span></a>
+      <div class="header-tools"><span class="live-status"><i class="live-dot"></i> SINCRONIZADA</span><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Buscar canal..." autocomplete="off"></label><a class="tab-button" href="/antel.html">ANTEL TV</a><a class="tab-button" href="/radio.html">◉ RADIO</a><a class="tab-button" href="/">← INICIO</a></div>
+    </header>
+    <section class="hero">
+      <div class="player" id="player">
+        <video id="video" controls playsinline preload="none"></video>
+        <div class="player-top"><div class="now-playing"><img id="current-logo" alt="Logo del canal"><div><strong id="current-title">Sincronizando lista...</strong><small><i class="live-dot"></i> TRANSMISIÓN EN VIVO</small></div></div></div>
+        <div class="player-error" id="player-error" role="alert"><b>Transmisión no disponible temporalmente</b><p id="error-detail">Prueba seleccionando otro canal o vuelve a intentarlo.</p><button id="retry" type="button">Reintentar</button></div>
+        <div class="player-bottom"><button id="play" type="button" title="Reproducir o pausar">▶</button><button id="mute" type="button" title="Silenciar">🔊</button><input id="volume" type="range" min="0" max="1" step=".05" value="1" aria-label="Volumen"><button id="fullscreen" type="button" title="Pantalla completa">⛶</button></div>
+      </div>
+      <aside class="info-panel"><div><h2>TU TELEVISIÓN<br>EN UN SOLO LUGAR</h2><p>Lista privada sincronizada desde el servidor, con sus categorías y logos.</p></div><div class="signal"><small>ESTADO DE LA LISTA</small><strong>Sincronización activa</strong></div><div class="stats"><div><b id="total">0</b><span>CANALES</span></div><div><b>HD</b><span>CALIDAD</span></div><div><b>24/7</b><span>EMISIÓN</span></div></div></aside>
+    </section>
+    <section class="channels"><div class="section-heading"><div><h2 id="channels-title">MI LISTA</h2><p id="channels-subtitle">Sincronizando canales...</p></div><span id="count">0 CANALES</span></div><div class="category-bar" id="category-bar" aria-label="Categorías de canales"></div><div class="channel-grid" id="channel-grid"></div><button class="load-more" id="load-more" type="button" hidden>Mostrar más canales</button></section>
+    <footer>FUTBOL UY TV · Mi lista privada</footer>
+  </main>
+</body>
+</html>
