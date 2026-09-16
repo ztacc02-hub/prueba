@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111722">
+  <title>ANTEL TV · FUTBOL UY TV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js" defer></script>
+  <script src="antel.js" defer></script>
+</head>
+<body class="antel-page">
+  <main class="antel-shell">
+    <header class="site-header antel-header"><a class="brand" href="/" aria-label="Volver a FUTBOL UY TV"><span class="brand-mark">⚽</span><span><b>FUTBOL UY TV</b><small>ANTEL TV</small></span></a><div class="header-tools"><span class="live-status" id="antel-status">SESIÓN CERRADA</span><a class="tab-button" href="/hub.html">▦ SECCIONES</a><a class="tab-button" href="/">← INICIO</a></div></header>
+    <section class="antel-login" id="antel-login"><div class="antel-login-art"><span class="antenna">⌁</span><strong>ANTEL<br><em>TV</em></strong><small>Televisión uruguaya</small></div><form class="antel-login-card" id="antel-login-form"><span class="hub-kicker">ACCESO INDEPENDIENTE</span><h1>Entrá a<br><em>tu televisión.</em></h1><p>Usá tus credenciales de Antel TV para cargar Canales, Radios, Cámaras y Películas.</p><label>Usuario<input id="antel-user" type="email" autocomplete="username" required placeholder="tu correo"></label><label>Contraseña<input id="antel-pass" type="password" autocomplete="current-password" required placeholder="Tu contraseña"></label><button class="antel-primary" type="submit">Iniciar sesión <span>→</span></button><div class="antel-message" id="antel-login-message" role="alert"></div></form></section>
+    <section class="antel-app" id="antel-app" hidden><div class="antel-welcome"><div><span class="hub-kicker">TU CATÁLOGO</span><h1>Elegí qué<br><em>querés ver.</em></h1></div><button class="antel-logout" id="antel-logout" type="button">Cerrar sesión</button></div><div class="antel-categories" id="antel-categories"></div><section class="antel-grid-view" id="antel-grid-view" hidden><div class="antel-toolbar"><button id="antel-back" class="antel-back" type="button">← Categorías</button><h2 id="antel-grid-title"></h2><label class="radio-search"><span>⌕</span><input id="antel-search" type="search" placeholder="Buscar contenido..."></label><button id="antel-favorites" class="antel-filter" type="button">☆ Favoritos</button></div><div class="antel-grid" id="antel-grid"></div><p class="antel-empty" id="antel-empty" hidden>No se encontró contenido.</p></section><section class="antel-player-view" id="antel-player-view" hidden><div class="antel-player-top"><button id="antel-player-back" type="button">← Volver</button><strong id="antel-player-name"></strong><span>EN VIVO</span></div><div class="antel-video-wrap" id="antel-video-wrap"><video id="antel-video" playsinline muted></video><div class="antel-player-message" id="antel-player-message">Sintonizando…</div><div class="antel-player-controls"><button id="antel-video-play" type="button" aria-label="Pausar o reproducir">▶</button><span>EN VIVO</span><button id="antel-video-fullscreen" type="button" aria-label="Pantalla completa">⛶</button></div></div></section></section>
+    <footer>FUTBOL UY TV · Antel TV independiente</footer>
+  </main>
+</body>
+</html>
