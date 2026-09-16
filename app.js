@@ -334,7 +334,7 @@ async function startApp() {
       if (!response.ok) throw new Error("No se pudo sincronizar la lista privada.");
       const channelsFromServer = await response.json();
       activeSavedList = { id: "my-list", name: "MI LISTA", channels: channelsFromServer };
-      await saveList(activeSavedList);
+      saveList(activeSavedList).catch(error => console.warn("No se pudo guardar la lista local:", error));
     } catch (error) {
       activeSavedList = await loadSavedList().catch(() => null);
       if (!activeSavedList) setError(error.message);
