@@ -3,6 +3,8 @@
   "appName": "FUTBOL UY TV",
   "webDir": "android-web",
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "url": "https://futbol-uy-tv.vercel.app",
+    "cleartext": false
   }
 }

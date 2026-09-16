@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090a0d">
+  <title>CANALES M3U · FUTBOL UY TV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="m3u.css">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js" defer></script>
+  <script src="m3u.js" defer></script>
+</head>
+<body class="m3u-page">
+  <main class="m3u-shell">
+    <header class="site-header"><a class="brand" href="/" aria-label="Volver a FUTBOL UY TV"><span class="brand-mark">⚽</span><span><b>FUTBOL UY TV</b><small>FUENTE M3U PRIVADA</small></span></a><div class="header-tools"><span class="live-status" id="m3u-status">SIN LISTA</span><button class="m3u-theme-toggle" id="m3u-theme-toggle" type="button" aria-label="Cambiar tema" title="Cambiar tema">☼</button><a class="tab-button" href="/hub.html">▦ SECCIONES</a><a class="tab-button" href="/">← INICIO</a></div></header>
+    <section class="m3u-intro"><span class="hub-kicker">REPRODUCTOR HTML5 · HLS.JS</span><h1>Tu lista.<br><em>Tus canales.</em></h1><p>Ingresá una URL M3U para validarla y reproducir sus señales HLS aquí. La dirección queda guardada únicamente en este navegador y no se publica.</p></section>
+    <div class="m3u-source-bar"><span class="m3u-source-lock">▣</span><div><strong>Fuente privada conectada</strong><small>La dirección de la lista está protegida y no se muestra.</small></div><button class="primary-button" id="m3u-refresh" type="button">Actualizar canales</button></div>
+    <p class="m3u-message" id="m3u-message" role="status">Ingresá una lista M3U para comenzar.</p>
+    <section class="m3u-player" id="m3u-player" hidden><div class="m3u-player-head"><span class="live-status">EN VIVO</span><h2 id="m3u-player-title">Seleccioná un canal</h2><button class="m3u-cast" id="m3u-cast" type="button" hidden>▣ Cast</button></div><video id="m3u-video" controls playsinline disableRemotePlayback="false"></video></section>
+    <section class="m3u-library"><div class="section-heading"><div><span class="hub-kicker">LISTA VALIDADA</span><h2 id="m3u-list-title">Canales M3U</h2></div><span id="m3u-count">0 CANALES</span></div><div class="category-bar" id="m3u-categories"></div><div class="channel-grid" id="m3u-channels"></div></section>
+    <footer>FUTBOL UY TV · Fuente M3U privada</footer>
+  </main>
+</body>
+</html>

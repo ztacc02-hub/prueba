@@ -3,6 +3,15 @@ const ANTEL_CONFIG = { sessionApi: "https://veratv-be.vera.com.uy/api/sesiones",
 const $ = id => document.getElementById(id);
 const state = { token: null, jwt: null, sessionExpiry: 0, renewTimer: null, streamTimer: null, streamRetry: 0, category: null, items: [], current: null, hls: null, favorites: new Set(JSON.parse(localStorage.getItem("antel-tv-favorites") || "[]")), showFavorites: false, user: "", password: "" };
 
+function applyTheme(theme) {
+  document.body.dataset.theme = theme;
+  const button = $("antel-theme-toggle");
+  if (button) { button.textContent = theme === "light" ? "☾" : "☼"; button.setAttribute("aria-label", theme === "light" ? "Activar modo oscuro" : "Activar modo claro"); }
+}
+
+const savedTheme = localStorage.getItem("antel-theme");
+applyTheme(savedTheme || (window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark"));
+
 function setMessage(message, error = false) { $("antel-login-message").textContent = message; $("antel-login-message").classList.toggle("error", error); }
 function setStatus(text) { $("antel-status").textContent = text; }
 function showApp() { $("antel-login").hidden = true; $("antel-app").hidden = false; }
@@ -135,6 +144,8 @@ $("antel-video-play").addEventListener("click", () => { const video = $("antel-v
 $("antel-video").addEventListener("play", () => { $("antel-video-play").textContent = "❚❚"; });
 $("antel-video").addEventListener("pause", () => { $("antel-video-play").textContent = "▶"; });
 $("antel-video-fullscreen").addEventListener("click", () => $("antel-video-wrap").requestFullscreen?.());
+
+$("antel-theme-toggle")?.addEventListener("click", () => { const theme = document.body.dataset.theme === "light" ? "dark" : "light"; localStorage.setItem("antel-theme", theme); applyTheme(theme); });
 
 $("antel-login-form").addEventListener("submit", login); $("antel-back").addEventListener("click", backToCategories); $("antel-player-back").addEventListener("click", backToGrid); $("antel-logout").addEventListener("click", logout); $("antel-search").addEventListener("input", renderGrid); $("antel-favorites").addEventListener("click", () => { state.showFavorites = !state.showFavorites; $("antel-favorites").textContent = state.showFavorites ? "★ Todos" : "☆ Favoritos"; renderGrid(); });
 $("antel-user").value = localStorage.getItem("antel-tv-user") || "";

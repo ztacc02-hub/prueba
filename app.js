@@ -203,13 +203,6 @@ function destroyHls() {
 }
 
 function loadChannel(channel) {
-  const playerUrl = new URL("/player.html", window.location.origin);
-  playerUrl.searchParams.set("src", new URL(channel.url, window.location.href).href);
-  playerUrl.searchParams.set("name", channel.name);
-  if (window.Capacitor?.isNativePlatform?.()) window.location.assign(playerUrl.href);
-  else window.open(playerUrl.href, "_blank", "noopener");
-  return;
-
   activeChannel = channel;
   $("current-title").textContent = displayName(channel.name);
   $("current-logo").src = logoFor(channel);

@@ -19,8 +19,9 @@
   <main class="app-shell">
     <header class="site-header">
       <a class="brand" href="./" aria-label="FUTBOL UY TV"><span class="brand-mark">⚽</span><span><b>FUTBOL UY TV</b><small>TELEVISIÓN EN VIVO</small></span></a>
-      <div class="header-tools"><span class="live-status"><i class="live-dot"></i> EN VIVO</span><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Buscar canal..." autocomplete="off"></label><a class="tab-button" href="/antel.html">ANTEL TV</a><a class="tab-button" href="/radio.html">◉ RADIO</a><a class="tab-button" href="/mi-lista.html">＋ MI LISTA</a></div>
+      <div class="header-tools"><span class="live-status"><i class="live-dot"></i> EN VIVO</span><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Buscar canal..." autocomplete="off"></label><a class="tab-button" href="/m3u.html">M3U PRIVADA</a><a class="tab-button" href="/antel.html">ANTEL TV</a><a class="tab-button" href="/radio.html">◉ RADIO</a><button class="tab-button my-list-toggle" id="toggle-my-list" type="button">＋ MI LISTA</button></div>
     </header>
+    <section class="my-list-loading" id="my-list-loading" hidden aria-live="polite"><div class="loader"><span></span></div><div><strong id="my-list-loading-title">Cargando Mi Lista</strong><p id="my-list-loading-detail">Buscando tus canales guardados...</p></div></section>
     <section class="hero">
       <div class="player" id="player">
         <video id="video" controls playsinline preload="none"></video>
