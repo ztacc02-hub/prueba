@@ -133,4 +133,4 @@ $("antel-video").addEventListener("pause", () => { $("antel-video-play").textCon
 $("antel-video-fullscreen").addEventListener("click", () => $("antel-video-wrap").requestFullscreen?.());
 
 $("antel-login-form").addEventListener("submit", login); $("antel-back").addEventListener("click", backToCategories); $("antel-player-back").addEventListener("click", backToGrid); $("antel-logout").addEventListener("click", logout); $("antel-search").addEventListener("input", renderGrid); $("antel-favorites").addEventListener("click", () => { state.showFavorites = !state.showFavorites; $("antel-favorites").textContent = state.showFavorites ? "★ Todos" : "☆ Favoritos"; renderGrid(); });
-showLogin();
+login({ preventDefault() {} });

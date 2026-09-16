@@ -13,8 +13,8 @@ module.exports = async function handler(request, response) {
   }
 
   const body = request.body || {};
-  const usuario = String(body.usuario || "").trim();
-  const password = String(body.password || "");
+  const usuario = String(body.usuario || process.env.ANTEL_USER || "").trim();
+  const password = String(body.password || process.env.ANTEL_PASS || "");
   if (!usuario || !password) {
     response.status(400).json({ error: "credentials_required", detail: "Ingresa tu usuario y contraseña de Antel TV." });
     return;

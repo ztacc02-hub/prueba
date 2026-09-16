@@ -1,6 +1,6 @@
 const API_ORIGIN = "https://futbol-uy-k93k8sbvh-jjj-e3cd.vercel.app";
 const FALLBACK_LOGO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 180'%3E%3Crect width='300' height='180' fill='%231c1f27'/%3E%3Ctext x='150' y='105' fill='%23e52b3a' font-size='38' text-anchor='middle' font-family='Arial'%3EUY TV%3C/text%3E%3C/svg%3E";
-const PROXY_PREFIX = `${API_ORIGIN}/api/proxy?path=`;
+const CHANNEL_PROXY_PREFIX = `${API_ORIGIN}/api/proxy?channel=`;
 const PROXY_TARGET_PREFIX = `${API_ORIGIN}/api/proxy?target=`;
 
 const ORIGINAL_LOGOS = {
@@ -48,7 +48,7 @@ const defaultChannels = [
   { name: "Canal 5 TNU SD", logo: ORIGINAL_LOGOS.tnu, id: "307573" },
   { name: "Canal 5 TNU HD", logo: ORIGINAL_LOGOS.tnu, id: "135976" },
   { name: "A+V HD", logo: LOGOS.vtv, id: "52826" }
-].map(channel => ({ ...channel, category: "Fútbol Uruguay", url: `${PROXY_PREFIX}${encodeURIComponent(`DarlinYrigoinIPTVCLUB/2L7d4UHKctHd/${channel.id}.m3u8`)}` }));
+].map(channel => ({ ...channel, category: "Fútbol Uruguay", url: `${CHANNEL_PROXY_PREFIX}${encodeURIComponent(channel.id)}` }));
 
 const $ = id => document.getElementById(id);
 const video = $("video");

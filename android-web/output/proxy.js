@@ -16,10 +16,22 @@ function proxyUrl(value) {
   return `/api/proxy?target=${encodeURIComponent(value)}`;
 }
 
+function channelUrl(id) {
+  const base = String(process.env.STREAM_BASE_URL || "").replace(/\/$/, "");
+  return base ? `${base}/${encodeURIComponent(String(id))}.m3u8` : "";
+}
+
 module.exports = async function handler(request, response) {
-  const { path, target } = request.query;
+  const { path, target, channel } = request.query;
+  const channelTarget = channel ? channelUrl(channel) : "";
+  if (channel && !channelTarget) {
+    response.status(503).send("STREAM_BASE_URL no está configurada en Vercel.");
+    return;
+  }
   const upstreamUrl = target
     ? String(target)
+    : channelTarget
+      ? channelTarget
     : `http://daleplaytv.vip/live/${String(path || "")}`;
 
   if (!isAllowedUrl(upstreamUrl)) {
@@ -62,7 +74,10 @@ module.exports = async function handler(request, response) {
     const playlist = await upstream.text();
     const rewritten = playlist.split(/\r?\n/).map(line => {
       const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith("#")) return line;
+      if (!trimmed) return line;
+      if (trimmed.startsWith("#")) {
+        return line.replace(/URI="([^"]+)"/gi, (_, value) => `URI="${proxyUrl(new URL(value, upstream.url).href)}"`);
+      }
       const absoluteUrl = new URL(trimmed, upstream.url).href;
       return proxyUrl(absoluteUrl);
     }).join("\n");
