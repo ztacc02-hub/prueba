@@ -1,7 +1,7 @@
 const API_ORIGIN = "https://futbol-uy-tv.vercel.app";
 const ANTEL_CONFIG = { sessionApi: "https://veratv-be.vera.com.uy/api/sesiones", setupApi: "https://veratv-be.vera.com.uy/api/setup", gridBase: "https://cds-frontend.vera.com.uy/api-contenidos/listas", gridHeaders: { "x-service-id": "3", "x-frontend-id": "1196", "x-system-id": "1" }, lists: { canales: 68, radios: 221, camaras: 139, peliculas: 250 }, labels: { canales: "Canales", radios: "Radios", camaras: "Cámaras", peliculas: "Películas" } };
 const $ = id => document.getElementById(id);
-const state = { token: null, jwt: null, sessionExpiry: 0, renewTimer: null, streamTimer: null, streamRetry: 0, category: null, items: [], current: null, hls: null, favorites: new Set(JSON.parse(localStorage.getItem("antel-tv-favorites") || "[]")), showFavorites: false };
+const state = { token: null, jwt: null, sessionExpiry: 0, renewTimer: null, streamTimer: null, streamRetry: 0, category: null, items: [], current: null, hls: null, favorites: new Set(JSON.parse(localStorage.getItem("antel-tv-favorites") || "[]")), showFavorites: false, user: "", password: "" };
 
 function setMessage(message, error = false) { $("antel-login-message").textContent = message; $("antel-login-message").classList.toggle("error", error); }
 function setStatus(text) { $("antel-status").textContent = text; }
@@ -9,26 +9,27 @@ function showApp() { $("antel-login").hidden = true; $("antel-app").hidden = fal
 function showLogin() { $("antel-login").hidden = false; $("antel-app").hidden = true; }
 function jwtPayload(token) { try { return JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); } catch { return {}; } }
 async function readJson(response) { const text = await response.text(); try { return JSON.parse(text); } catch { throw new Error(`El servidor respondió ${response.status} con un formato inesperado.`); } }
+async function requestJson(url, options = {}) { const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 30000); try { return await fetch(url, { ...options, signal: controller.signal }); } catch (error) { if (error.name === "AbortError") throw new Error("La conexión con Antel tardó demasiado. Reintentá."); throw new Error("No se pudo conectar con Antel TV. Revisá la conexión del dispositivo."); } finally { clearTimeout(timeout); } }
 
-async function login(event) {
-  event.preventDefault();
-  const user = $("antel-user").value.trim();
-  const password = $("antel-pass").value;
+function credentials() { return { usuario: state.user || $("antel-user").value.trim(), password: state.password || $("antel-pass").value }; }
+
+async function login(event, silent = false) {
+  event?.preventDefault();
+  const { usuario: user, password } = credentials();
   if ((user && !password) || (!user && password)) { setMessage("Completa usuario y contraseña de Antel TV.", true); return; }
-  if (user) state.user = user;
-  if (password) state.password = password;
-  setMessage("Conectando…");
+  state.user = user; state.password = password;
+  if (!silent) setMessage("Conectando…");
   try {
-    const loginResponse = await fetch(`${API_ORIGIN}/api/antel-login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: user, password }) });
+    const loginResponse = await requestJson(`${API_ORIGIN}/api/antel-login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: user, password }) });
     const loginData = await readJson(loginResponse);
     if (!loginResponse.ok || !loginData.id_token) throw new Error(loginData.detail || loginData.error || "Usuario o contraseña incorrectos.");
-    const sessionResponse = await fetch(ANTEL_CONFIG.sessionApi, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: loginData.usuario || user, dominio: loginData.dominio || "lua", tipo: "usuario", autenticacion_jwt: loginData.id_token }) });
+    const sessionResponse = await requestJson(ANTEL_CONFIG.sessionApi, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: loginData.usuario || user, dominio: loginData.dominio || "lua", tipo: "usuario", autenticacion_jwt: loginData.id_token }) });
     const sessionData = await readJson(sessionResponse);
     if (!sessionResponse.ok || !sessionData.token || !sessionData.jwt) throw new Error(sessionData.detail || sessionData.mensaje || "No se pudo crear la sesión.");
     state.token = sessionData.token; state.jwt = sessionData.jwt; state.user = loginData.usuario || state.user;
     scheduleRenewal(sessionData.jwt);
     setStatus("SESIÓN ACTIVA"); showApp(); renderCategories();
-  } catch (error) { setMessage(error.message, true); }
+  } catch (error) { setMessage(error.message, true); if (silent) setStatus("SESIÓN CERRADA"); }
 }
 
 function scheduleRenewal(jwt) {
@@ -36,7 +37,7 @@ function scheduleRenewal(jwt) {
   const payload = jwtPayload(jwt);
   state.sessionExpiry = (payload.exp || Math.floor(Date.now() / 1000) + 21600) * 1000;
   const delay = Math.max(state.sessionExpiry - Date.now() - 10 * 60 * 1000, 5000);
-  state.renewTimer = setTimeout(() => login({ preventDefault() {} }), delay);
+  state.renewTimer = setTimeout(() => login(null, true), delay);
 }
 
 function renderCategories() {
@@ -51,7 +52,7 @@ function renderCategories() {
 async function loadGrid(category) {
   state.category = category; state.showFavorites = false; $("antel-categories").hidden = true; $("antel-grid-view").hidden = false; $("antel-grid-title").textContent = ANTEL_CONFIG.labels[category]; $("antel-search").value = ""; $("antel-grid").innerHTML = '<div class="antel-loading">Cargando catálogo…</div>';
   try {
-    const response = await fetch(`${ANTEL_CONFIG.gridBase}/${ANTEL_CONFIG.lists[category]}?token=${encodeURIComponent(state.token)}`, { headers: { ...ANTEL_CONFIG.gridHeaders, Authorization: `Bearer ${state.jwt}` } });
+    const response = await requestJson(`${ANTEL_CONFIG.gridBase}/${ANTEL_CONFIG.lists[category]}?token=${encodeURIComponent(state.token)}`, { headers: { ...ANTEL_CONFIG.gridHeaders, Authorization: `Bearer ${state.jwt}` } });
     const data = await readJson(response); if (!response.ok) throw new Error(data.info || data.detail || `Error ${response.status}`);
     state.items = (data.contenidos || []).map(item => ({ id: String(item.public_id), name: item.nombre_fantasia || item.nombre || "Sin nombre", logo: item.imagen_horizontal || item.imagen_principal || "" })); renderGrid();
   } catch (error) { $("antel-grid").innerHTML = ""; $("antel-empty").hidden = false; $("antel-empty").textContent = `No se pudo cargar ${ANTEL_CONFIG.labels[category]}. ${error.message}`; }
@@ -93,24 +94,24 @@ function validateProvisioning(data) {
 }
 
 async function refreshAntelSession() {
-  const response = await fetch(`${API_ORIGIN}/api/antel-login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: state.user, password: state.password }) });
+  const response = await requestJson(`${API_ORIGIN}/api/antel-login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: state.user, password: state.password }) });
   const data = await readJson(response);
   if (!response.ok || !data.id_token) throw new Error(data.detail || "No se pudo renovar el token.");
-  const sessionResponse = await fetch(ANTEL_CONFIG.sessionApi, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: data.usuario, dominio: data.dominio || "lua", tipo: "usuario", autenticacion_jwt: data.id_token }) });
+  const sessionResponse = await requestJson(ANTEL_CONFIG.sessionApi, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: data.usuario, dominio: data.dominio || "lua", tipo: "usuario", autenticacion_jwt: data.id_token }) });
   const sessionData = await readJson(sessionResponse);
   if (!sessionResponse.ok || !sessionData.token || !sessionData.jwt) throw new Error(sessionData.detail || "No se pudo renovar la sesión.");
   state.token = sessionData.token; state.jwt = sessionData.jwt; scheduleRenewal(sessionData.jwt);
 }
 
 async function requestStream(item) {
-  const request = () => fetch(`${ANTEL_CONFIG.setupApi}?token=${encodeURIComponent(state.token)}&public_id=${encodeURIComponent(item.id)}`);
+  const request = () => requestJson(`${ANTEL_CONFIG.setupApi}?token=${encodeURIComponent(state.token)}&public_id=${encodeURIComponent(item.id)}`);
   let response = await request();
   let data = await readJson(response);
   const code = data?.code_interno || data?.code || data?.info?.code || "";
   if (!response.ok && code === "9601-REP_SIM") { await refreshAntelSession(); response = await request(); data = await readJson(response); }
   if (!response.ok) throw new Error(setupError(data, response.status));
   validateProvisioning(data);
-  const url = findStreamUrl(data);
+  const url = data?.url?.suggested?.url || data?.url_backup?.suggested?.url || findStreamUrl(data);
   if (!url) throw new Error("Antel no entregó una URL de reproducción para este contenido.");
   return url;
 }
@@ -124,7 +125,7 @@ function scheduleStreamRefresh(url) {
   state.streamTimer = setTimeout(() => { if (state.current) play(state.current, true); }, delay);
 }
 
-async function play(item, silentRefresh = false) { state.current = item; if (!silentRefresh) { $("antel-grid-view").hidden = true; $("antel-player-view").hidden = false; } $("antel-player-name").textContent = item.name; $("antel-player-message").textContent = silentRefresh ? "Renovando señal…" : "Sintonizando…"; $("antel-player-message").hidden = false; if (state.hls) state.hls.destroy(); const video = $("antel-video"); video.muted = true; video.autoplay = true; video.playbackRate = 1; video.pause(); video.removeAttribute("src"); video.load(); try { const url = await requestStream(item); scheduleStreamRefresh(url); if (window.Hls?.isSupported() && /\.m3u8|playlist/i.test(url)) { state.hls = new Hls({ maxLiveSyncPlaybackRate: 1, lowLatencyMode: true }); state.hls.attachMedia(video); state.hls.on(Hls.Events.MANIFEST_PARSED, () => { $("antel-player-message").hidden = true; state.streamRetry = 0; video.play().catch(() => {}); }); state.hls.on(Hls.Events.ERROR, (_, data) => { if (!data.fatal || state.streamRetry >= 2) return; state.streamRetry += 1; play(state.current, true); }); state.hls.loadSource(url); } else { video.src = url; video.addEventListener("loadedmetadata", () => { $("antel-player-message").hidden = true; }, { once: true }); video.play().catch(() => {}); } } catch (error) { $("antel-player-message").textContent = `No se pudo reproducir: ${error.message}`; } }
+async function play(item, silentRefresh = false) { state.current = item; if (!silentRefresh) { $("antel-grid-view").hidden = true; $("antel-player-view").hidden = false; } $("antel-player-name").textContent = item.name; $("antel-player-message").textContent = silentRefresh ? "Renovando señal…" : "Sintonizando…"; $("antel-player-message").hidden = false; if (state.hls) state.hls.destroy(); const video = $("antel-video"); video.muted = true; video.autoplay = true; video.playbackRate = 1; video.pause(); video.removeAttribute("src"); video.load(); try { const url = await requestStream(item); scheduleStreamRefresh(url); if (window.Hls?.isSupported() && /\.m3u8|playlist/i.test(url)) { state.hls = new Hls({ maxLiveSyncPlaybackRate: 1, lowLatencyMode: true }); state.hls.attachMedia(video); state.hls.on(Hls.Events.MANIFEST_PARSED, () => { $("antel-player-message").hidden = true; state.streamRetry = 0; video.play().catch(() => {}); }); state.hls.on(Hls.Events.ERROR, (_, data) => { if (!data.fatal || state.streamRetry >= 2) { $("antel-player-message").textContent = "La señal no respondió después de varios intentos."; return; } state.streamRetry += 1; $("antel-player-message").textContent = `Reconectando (${state.streamRetry}/2)…`; play(state.current, true); }); state.hls.loadSource(url); } else { video.src = url; video.addEventListener("loadedmetadata", () => { $("antel-player-message").hidden = true; }, { once: true }); video.play().catch(() => {}); } } catch (error) { $("antel-player-message").textContent = `No se pudo reproducir: ${error.message}`; } }
 
 function backToCategories() { $("antel-grid-view").hidden = true; $("antel-categories").hidden = false; }
 function backToGrid() { $("antel-player-view").hidden = true; $("antel-grid-view").hidden = false; }
