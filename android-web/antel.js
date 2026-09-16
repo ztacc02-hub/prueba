@@ -13,9 +13,9 @@ async function login(event) {
   event.preventDefault();
   const user = $("antel-user").value.trim();
   const password = $("antel-pass").value;
-  if (!user || !password) { setMessage("Ingresa tu usuario y contraseña de Antel TV.", true); return; }
-  state.user = user;
-  state.password = password;
+  if ((user && !password) || (!user && password)) { setMessage("Completa usuario y contraseña de Antel TV.", true); return; }
+  if (user) state.user = user;
+  if (password) state.password = password;
   setMessage("Conectando…");
   try {
     const loginResponse = await fetch(`${API_ORIGIN}/api/antel-login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: user, password }) });
@@ -24,7 +24,7 @@ async function login(event) {
     const sessionResponse = await fetch(ANTEL_CONFIG.sessionApi, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: loginData.usuario || user, dominio: loginData.dominio || "lua", tipo: "usuario", autenticacion_jwt: loginData.id_token }) });
     const sessionData = await sessionResponse.json();
     if (!sessionResponse.ok || !sessionData.token || !sessionData.jwt) throw new Error(sessionData.detail || sessionData.mensaje || "No se pudo crear la sesión.");
-    state.token = sessionData.token; state.jwt = sessionData.jwt;
+    state.token = sessionData.token; state.jwt = sessionData.jwt; state.user = loginData.usuario || state.user;
     scheduleRenewal(sessionData.jwt);
     setStatus("SESIÓN ACTIVA"); showApp(); renderCategories();
   } catch (error) { setMessage(error.message, true); }
