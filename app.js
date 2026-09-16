@@ -348,10 +348,11 @@ async function startApp() {
   $("total").textContent = currentChannels.length;
   renderCategories();
   renderChannels();
-  setTimeout(() => {
-    $("splash").classList.add("hide");
-    if (currentChannels[0]) loadChannel(currentChannels[0]);
-  }, 700);
+  setTimeout(() => $("splash").classList.add("hide"), 700);
 }
 
-startApp();
+startApp().catch(error => {
+  console.error("No se pudo iniciar la aplicación:", error);
+  $("splash").classList.add("hide");
+  setError("No se pudo cargar la lista. Reintentá desde el botón del reproductor.");
+});
