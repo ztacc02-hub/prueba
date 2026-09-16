@@ -16,7 +16,7 @@ function credentials() { return { usuario: state.user || $("antel-user").value.t
 async function login(event, silent = false) {
   event?.preventDefault();
   const { usuario: user, password } = credentials();
-  if (!user || !password) { setMessage("Completa usuario y contraseña de Antel TV.", true); return; }
+  if (!silent && (!user || !password)) { setMessage("Completa usuario y contraseña de Antel TV.", true); return; }
   state.user = user; state.password = password;
   if (!silent) setMessage("Conectando…");
   try {
