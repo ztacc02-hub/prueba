@@ -29,7 +29,7 @@ async function login(event, silent = false) {
     state.token = sessionData.token; state.jwt = sessionData.jwt; state.user = loginData.usuario || state.user; localStorage.setItem("antel-tv-user", state.user); $("antel-pass").value = "";
     scheduleRenewal(sessionData.jwt);
     setStatus("SESIÓN ACTIVA"); showApp(); renderCategories();
-  } catch (error) { setMessage(error.message, true); if (silent) setStatus("SESIÓN CERRADA"); }
+  } catch (error) { setMessage(`${error.message} Podés ingresar las credenciales manualmente.`, true); if (silent) setStatus("SESIÓN CERRADA"); }
 }
 
 function scheduleRenewal(jwt) {
