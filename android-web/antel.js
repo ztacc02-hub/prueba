@@ -1,4 +1,4 @@
-const API_ORIGIN = "https://futbol-uy-k93k8sbvh-jjj-e3cd.vercel.app";
+const API_ORIGIN = window.Capacitor?.isNativePlatform?.() ? "https://futbol-uy-k93k8sbvh-jjj-e3cd.vercel.app" : "";
 const ANTEL_CONFIG = { sessionApi: "https://veratv-be.vera.com.uy/api/sesiones", setupApi: "https://veratv-be.vera.com.uy/api/setup", gridBase: "https://cds-frontend.vera.com.uy/api-contenidos/listas", gridHeaders: { "x-service-id": "3", "x-frontend-id": "1196", "x-system-id": "1" }, lists: { canales: 68, radios: 221, camaras: 139, peliculas: 250 }, labels: { canales: "Canales", radios: "Radios", camaras: "Cámaras", peliculas: "Películas" } };
 const $ = id => document.getElementById(id);
 const state = { token: null, jwt: null, sessionExpiry: 0, renewTimer: null, streamTimer: null, streamRetry: 0, category: null, items: [], current: null, hls: null, favorites: new Set(JSON.parse(localStorage.getItem("antel-tv-favorites") || "[]")), showFavorites: false };
@@ -8,6 +8,7 @@ function setStatus(text) { $("antel-status").textContent = text; }
 function showApp() { $("antel-login").hidden = true; $("antel-app").hidden = false; }
 function showLogin() { $("antel-login").hidden = false; $("antel-app").hidden = true; }
 function jwtPayload(token) { try { return JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); } catch { return {}; } }
+async function readJson(response) { const text = await response.text(); try { return JSON.parse(text); } catch { throw new Error(`El servidor respondió ${response.status} con un formato inesperado.`); } }
 
 async function login(event) {
   event.preventDefault();
@@ -19,10 +20,10 @@ async function login(event) {
   setMessage("Conectando…");
   try {
     const loginResponse = await fetch(`${API_ORIGIN}/api/antel-login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: user, password }) });
-    const loginData = await loginResponse.json();
+    const loginData = await readJson(loginResponse);
     if (!loginResponse.ok || !loginData.id_token) throw new Error(loginData.detail || loginData.error || "Usuario o contraseña incorrectos.");
     const sessionResponse = await fetch(ANTEL_CONFIG.sessionApi, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: loginData.usuario || user, dominio: loginData.dominio || "lua", tipo: "usuario", autenticacion_jwt: loginData.id_token }) });
-    const sessionData = await sessionResponse.json();
+    const sessionData = await readJson(sessionResponse);
     if (!sessionResponse.ok || !sessionData.token || !sessionData.jwt) throw new Error(sessionData.detail || sessionData.mensaje || "No se pudo crear la sesión.");
     state.token = sessionData.token; state.jwt = sessionData.jwt; state.user = loginData.usuario || state.user;
     scheduleRenewal(sessionData.jwt);
@@ -51,7 +52,7 @@ async function loadGrid(category) {
   state.category = category; state.showFavorites = false; $("antel-categories").hidden = true; $("antel-grid-view").hidden = false; $("antel-grid-title").textContent = ANTEL_CONFIG.labels[category]; $("antel-search").value = ""; $("antel-grid").innerHTML = '<div class="antel-loading">Cargando catálogo…</div>';
   try {
     const response = await fetch(`${ANTEL_CONFIG.gridBase}/${ANTEL_CONFIG.lists[category]}?token=${encodeURIComponent(state.token)}`, { headers: { ...ANTEL_CONFIG.gridHeaders, Authorization: `Bearer ${state.jwt}` } });
-    const data = await response.json(); if (!response.ok) throw new Error(data.info || data.detail || `Error ${response.status}`);
+    const data = await readJson(response); if (!response.ok) throw new Error(data.info || data.detail || `Error ${response.status}`);
     state.items = (data.contenidos || []).map(item => ({ id: String(item.public_id), name: item.nombre_fantasia || item.nombre || "Sin nombre", logo: item.imagen_horizontal || item.imagen_principal || "" })); renderGrid();
   } catch (error) { $("antel-grid").innerHTML = ""; $("antel-empty").hidden = false; $("antel-empty").textContent = `No se pudo cargar ${ANTEL_CONFIG.labels[category]}. ${error.message}`; }
 }
@@ -76,6 +77,8 @@ function setupError(data, status) {
   const lower = detail.toLocaleLowerCase();
   if (code === "9601-REP_SIM" || lower.includes("reproducciones simultáneas") || lower.includes("reproducciones simultaneas")) return "Antel permite un máximo de 2 reproducciones simultáneas. Se renovará la sesión y se reintentará.";
   if (code === "9601-IPANTELNOROA" || lower.includes("redes de antel")) return "Esta señal solo está disponible desde una red de Antel dentro de Uruguay.";
+  if (["9601-OTTEXTAUTH", "9601-AUTHREQ"].includes(code)) return "Antel requiere autorización adicional para esta señal.";
+  if (code === "9601-SOLOUY") return "Esta señal solo está disponible dentro de Uruguay.";
   if (status === 403 && (lower.includes("condiciones") || lower.includes("restringido"))) return "Tu cuenta no cumple las condiciones de acceso para este contenido.";
   return detail || `Error de reproducción (${status})`;
 }
@@ -91,10 +94,10 @@ function validateProvisioning(data) {
 
 async function refreshAntelSession() {
   const response = await fetch(`${API_ORIGIN}/api/antel-login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: state.user, password: state.password }) });
-  const data = await response.json();
+  const data = await readJson(response);
   if (!response.ok || !data.id_token) throw new Error(data.detail || "No se pudo renovar el token.");
   const sessionResponse = await fetch(ANTEL_CONFIG.sessionApi, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: data.usuario, dominio: data.dominio || "lua", tipo: "usuario", autenticacion_jwt: data.id_token }) });
-  const sessionData = await sessionResponse.json();
+  const sessionData = await readJson(sessionResponse);
   if (!sessionResponse.ok || !sessionData.token || !sessionData.jwt) throw new Error(sessionData.detail || "No se pudo renovar la sesión.");
   state.token = sessionData.token; state.jwt = sessionData.jwt; scheduleRenewal(sessionData.jwt);
 }
@@ -102,9 +105,9 @@ async function refreshAntelSession() {
 async function requestStream(item) {
   const request = () => fetch(`${ANTEL_CONFIG.setupApi}?token=${encodeURIComponent(state.token)}&public_id=${encodeURIComponent(item.id)}`);
   let response = await request();
-  let data = await response.json();
+  let data = await readJson(response);
   const code = data?.code_interno || data?.code || data?.info?.code || "";
-  if (!response.ok && code === "9601-REP_SIM") { await refreshAntelSession(); response = await request(); data = await response.json(); }
+  if (!response.ok && code === "9601-REP_SIM") { await refreshAntelSession(); response = await request(); data = await readJson(response); }
   if (!response.ok) throw new Error(setupError(data, response.status));
   validateProvisioning(data);
   const url = findStreamUrl(data);

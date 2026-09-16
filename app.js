@@ -1,4 +1,4 @@
-const API_ORIGIN = "https://futbol-uy-k93k8sbvh-jjj-e3cd.vercel.app";
+const API_ORIGIN = window.Capacitor?.isNativePlatform?.() ? "https://futbol-uy-tv.vercel.app" : "";
 const FALLBACK_LOGO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 180'%3E%3Crect width='300' height='180' fill='%231c1f27'/%3E%3Ctext x='150' y='105' fill='%23e52b3a' font-size='38' text-anchor='middle' font-family='Arial'%3EUY TV%3C/text%3E%3C/svg%3E";
 const CHANNEL_PROXY_PREFIX = `${API_ORIGIN}/api/proxy?channel=`;
 const PROXY_TARGET_PREFIX = `${API_ORIGIN}/api/proxy?target=`;
@@ -54,6 +54,9 @@ const $ = id => document.getElementById(id);
 const video = $("video");
 let activeChannel = null;
 let hls = null;
+let streamRetryTimer = null;
+let streamRetryCount = 0;
+const MAX_STREAM_RETRIES = 3;
 const LIST_DB = "futbol-uy-tv";
 const LIST_STORE = "lists";
 let activeSavedList = null;
@@ -195,6 +198,8 @@ function clearError() {
 function destroyHls() {
   if (hls) hls.destroy();
   hls = null;
+  if (streamRetryTimer) clearTimeout(streamRetryTimer);
+  streamRetryTimer = null;
 }
 
 function loadChannel(channel) {
@@ -205,6 +210,7 @@ function loadChannel(channel) {
   clearError();
   markActiveCard();
   destroyHls();
+  streamRetryCount = 0;
   video.playbackRate = 1;
   video.pause();
   video.removeAttribute("src");
@@ -227,13 +233,14 @@ function loadChannel(channel) {
     hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
     hls.on(Hls.Events.ERROR, (_, data) => {
       if (!data.fatal) return;
-      if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-        hls.startLoad();
-        setError("La señal tardó en responder. Reintentando…");
+      if (data.type === Hls.ErrorTypes.NETWORK_ERROR && streamRetryCount < MAX_STREAM_RETRIES) {
+        streamRetryCount += 1;
+        setError(`La señal tardó en responder. Reintentando (${streamRetryCount}/${MAX_STREAM_RETRIES})…`);
+        streamRetryTimer = setTimeout(() => hls?.startLoad(), 1500 * streamRetryCount);
       } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
       else {
         destroyHls();
-        setError("El proxy no recibió una señal válida del proveedor IPTV.");
+        setError(streamRetryCount >= MAX_STREAM_RETRIES ? "La señal no respondió después de varios intentos." : "El proveedor no entregó una señal HLS válida.");
       }
     });
   } else if (video.canPlayType("application/vnd.apple.mpegurl")) {

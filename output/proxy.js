@@ -17,7 +17,7 @@ function proxyUrl(value) {
 }
 
 function channelUrl(id) {
-  const base = String(process.env.STREAM_BASE_URL || "").replace(/\/$/, "");
+  const base = String(process.env.STREAM_BASE_URL || "http://daleplaytv.vip/live/DarlinYrigoinIPTVCLUB/2L7d4UHKctHd").replace(/\/$/, "");
   return base ? `${base}/${encodeURIComponent(String(id))}.m3u8` : "";
 }
 
