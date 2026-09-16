@@ -16,7 +16,7 @@ function credentials() { return { usuario: state.user || $("antel-user").value.t
 async function login(event, silent = false) {
   event?.preventDefault();
   const { usuario: user, password } = credentials();
-  if ((user && !password) || (!user && password)) { setMessage("Completa usuario y contraseña de Antel TV.", true); return; }
+  if (!user || !password) { setMessage("Completa usuario y contraseña de Antel TV.", true); return; }
   state.user = user; state.password = password;
   if (!silent) setMessage("Conectando…");
   try {
@@ -26,7 +26,7 @@ async function login(event, silent = false) {
     const sessionResponse = await requestJson(ANTEL_CONFIG.sessionApi, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: loginData.usuario || user, dominio: loginData.dominio || "lua", tipo: "usuario", autenticacion_jwt: loginData.id_token }) });
     const sessionData = await readJson(sessionResponse);
     if (!sessionResponse.ok || !sessionData.token || !sessionData.jwt) throw new Error(sessionData.detail || sessionData.mensaje || "No se pudo crear la sesión.");
-    state.token = sessionData.token; state.jwt = sessionData.jwt; state.user = loginData.usuario || state.user;
+    state.token = sessionData.token; state.jwt = sessionData.jwt; state.user = loginData.usuario || state.user; localStorage.setItem("antel-tv-user", state.user); $("antel-pass").value = "";
     scheduleRenewal(sessionData.jwt);
     setStatus("SESIÓN ACTIVA"); showApp(); renderCategories();
   } catch (error) { setMessage(error.message, true); if (silent) setStatus("SESIÓN CERRADA"); }
@@ -137,4 +137,4 @@ $("antel-video").addEventListener("pause", () => { $("antel-video-play").textCon
 $("antel-video-fullscreen").addEventListener("click", () => $("antel-video-wrap").requestFullscreen?.());
 
 $("antel-login-form").addEventListener("submit", login); $("antel-back").addEventListener("click", backToCategories); $("antel-player-back").addEventListener("click", backToGrid); $("antel-logout").addEventListener("click", logout); $("antel-search").addEventListener("input", renderGrid); $("antel-favorites").addEventListener("click", () => { state.showFavorites = !state.showFavorites; $("antel-favorites").textContent = state.showFavorites ? "★ Todos" : "☆ Favoritos"; renderGrid(); });
-login({ preventDefault() {} });
+$("antel-user").value = localStorage.getItem("antel-tv-user") || "";
