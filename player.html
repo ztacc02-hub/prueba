@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090a0d">
+  <title>Reproductor · FUTBOL UY TV</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js" defer></script>
+  <script src="player.js?v=1.0.13" defer></script>
+</head>
+<body class="standalone-player-page">
+  <main class="standalone-player-shell">
+    <header class="site-header">
+      <a class="brand" href="/mi-lista.html"><span class="brand-mark">⚽</span><span><b>FUTBOL UY TV</b><small>REPRODUCTOR INDEPENDIENTE</small></span></a>
+      <a class="tab-button" href="/mi-lista.html">← VOLVER A MI LISTA</a>
+    </header>
+    <section class="standalone-player" aria-label="Reproductor de canal">
+      <div class="standalone-player-head"><span class="live-status" id="player-status">CONECTANDO</span><h1 id="player-title">Cargando canal...</h1></div>
+      <video id="standalone-video" controls playsinline autoplay muted></video>
+      <div class="standalone-message" id="player-message">Preparando señal...</div>
+      <button class="primary-button standalone-retry" id="player-retry" type="button">Reintentar</button>
+    </section>
+  </main>
+</body>
+</html>
