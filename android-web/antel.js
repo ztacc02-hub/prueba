@@ -1,4 +1,4 @@
-const API_ORIGIN = window.Capacitor?.isNativePlatform?.() ? "https://futbol-uy-tv.vercel.app" : "";
+const API_ORIGIN = "https://futbol-uy-tv.vercel.app";
 const ANTEL_CONFIG = { sessionApi: "https://veratv-be.vera.com.uy/api/sesiones", setupApi: "https://veratv-be.vera.com.uy/api/setup", gridBase: "https://cds-frontend.vera.com.uy/api-contenidos/listas", gridHeaders: { "x-service-id": "3", "x-frontend-id": "1196", "x-system-id": "1" }, lists: { canales: 68, radios: 221, camaras: 139, peliculas: 250 }, labels: { canales: "Canales", radios: "Radios", camaras: "Cámaras", peliculas: "Películas" } };
 const $ = id => document.getElementById(id);
 const state = { token: null, jwt: null, sessionExpiry: 0, renewTimer: null, streamTimer: null, streamRetry: 0, category: null, items: [], current: null, hls: null, favorites: new Set(JSON.parse(localStorage.getItem("antel-tv-favorites") || "[]")), showFavorites: false };
