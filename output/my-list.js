@@ -58,7 +58,7 @@ function readPlaylistText(url) {
     };
     const request = client.get(url, {
       headers: { Accept: "audio/x-mpegurl, application/vnd.apple.mpegurl, text/plain", "Accept-Encoding": "identity", "User-Agent": "Mozilla/5.0 FUTBOL-UY-TV" },
-      timeout: 20000
+      timeout: 60000
     }, upstream => {
       if (upstream.statusCode < 200 || upstream.statusCode >= 300) {
         upstream.resume();
@@ -73,11 +73,10 @@ function readPlaylistText(url) {
         }, 1500);
       };
       upstream.on("data", chunk => {
-        if (total < 8 * 1024 * 1024) {
+        if (total < 64 * 1024 * 1024) {
           chunks.push(chunk);
           total += chunk.length;
         }
-        if (total >= 2200000 && !completionTimer) completionTimer = setTimeout(() => { upstream.destroy(); finish(); }, 1500);
         stopWhenIdle();
       });
       upstream.on("end", () => finish());
