@@ -3,8 +3,6 @@ const crypto = require("crypto");
 const CLIENT_ID = "veratv-beta";
 const REDIRECT_URI = "https://tv.vera.com.uy/";
 const OIDC_AUTHORIZE_URL = "https://login.vera.com.uy/oidc/authorize";
-const DEFAULT_USER = "william.s.martinez@hotmail.com";
-const DEFAULT_PASS = "wilymanya1979";
 const DOMINIO = "lua";
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
@@ -15,8 +13,12 @@ module.exports = async function handler(request, response) {
   }
 
   const body = request.body || {};
-  const usuario = body.usuario || DEFAULT_USER;
-  const password = body.password || DEFAULT_PASS;
+  const usuario = String(body.usuario || "").trim();
+  const password = String(body.password || "");
+  if (!usuario || !password) {
+    response.status(400).json({ error: "credentials_required", detail: "Ingresa usuario y contraseña de Antel TV." });
+    return;
+  }
   try {
     const jar = new CookieJar();
     const authorizeResponse = await jar.fetch(buildAuthorizeUrl());

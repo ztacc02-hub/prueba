@@ -13,9 +13,12 @@ async function login(event) {
   event.preventDefault();
   const user = $("antel-user").value.trim();
   const password = $("antel-pass").value;
+  if (!user || !password) { setMessage("Ingresa tu usuario y contraseña de Antel TV.", true); return; }
+  state.user = user;
+  state.password = password;
   setMessage("Conectando…");
   try {
-    const loginResponse = await fetch(`${API_ORIGIN}/api/antel-login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+    const loginResponse = await fetch(`${API_ORIGIN}/api/antel-login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: user, password }) });
     const loginData = await loginResponse.json();
     if (!loginResponse.ok || !loginData.id_token) throw new Error(loginData.detail || loginData.error || "Usuario o contraseña incorrectos.");
     const sessionResponse = await fetch(ANTEL_CONFIG.sessionApi, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: loginData.usuario || user, dominio: loginData.dominio || "lua", tipo: "usuario", autenticacion_jwt: loginData.id_token }) });
@@ -87,7 +90,7 @@ function validateProvisioning(data) {
 }
 
 async function refreshAntelSession() {
-  const response = await fetch(`${API_ORIGIN}/api/antel-login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+  const response = await fetch(`${API_ORIGIN}/api/antel-login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: state.user, password: state.password }) });
   const data = await response.json();
   if (!response.ok || !data.id_token) throw new Error(data.detail || "No se pudo renovar el token.");
   const sessionResponse = await fetch(ANTEL_CONFIG.sessionApi, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario: data.usuario, dominio: data.dominio || "lua", tipo: "usuario", autenticacion_jwt: data.id_token }) });
@@ -122,7 +125,7 @@ async function play(item, silentRefresh = false) { state.current = item; if (!si
 
 function backToCategories() { $("antel-grid-view").hidden = true; $("antel-categories").hidden = false; }
 function backToGrid() { $("antel-player-view").hidden = true; $("antel-grid-view").hidden = false; }
-function logout() { if (state.renewTimer) clearTimeout(state.renewTimer); if (state.streamTimer) clearTimeout(state.streamTimer); if (state.hls) state.hls.destroy(); $("antel-video").pause(); state.token = null; state.jwt = null; state.items = []; showLogin(); setStatus("SESIÓN CERRADA"); }
+function logout() { if (state.renewTimer) clearTimeout(state.renewTimer); if (state.streamTimer) clearTimeout(state.streamTimer); if (state.hls) state.hls.destroy(); $("antel-video").pause(); state.token = null; state.jwt = null; state.user = null; state.password = null; state.items = []; showLogin(); setStatus("SESIÓN CERRADA"); }
 
 $("antel-video-play").addEventListener("click", () => { const video = $("antel-video"); if (video.paused) video.play().catch(() => {}); else video.pause(); $("antel-video-play").textContent = video.paused ? "▶" : "❚❚"; });
 $("antel-video").addEventListener("play", () => { $("antel-video-play").textContent = "❚❚"; });
@@ -130,4 +133,4 @@ $("antel-video").addEventListener("pause", () => { $("antel-video-play").textCon
 $("antel-video-fullscreen").addEventListener("click", () => $("antel-video-wrap").requestFullscreen?.());
 
 $("antel-login-form").addEventListener("submit", login); $("antel-back").addEventListener("click", backToCategories); $("antel-player-back").addEventListener("click", backToGrid); $("antel-logout").addEventListener("click", logout); $("antel-search").addEventListener("input", renderGrid); $("antel-favorites").addEventListener("click", () => { state.showFavorites = !state.showFavorites; $("antel-favorites").textContent = state.showFavorites ? "★ Todos" : "☆ Favoritos"; renderGrid(); });
-login({ preventDefault() {} });
+showLogin();

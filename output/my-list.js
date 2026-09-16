@@ -1,6 +1,6 @@
 const http = require("http");
 const https = require("https");
-const PLAYLIST_URL = "http://daleplaytv.vip/get.php?username=3MPreMarcelinaC25&password=ykLnVQZOLL6szZ3d&type=m3u_plus";
+const PLAYLIST_URL = process.env.PLAYLIST_URL || "";
 
 function parseAttributes(value) {
   return Object.fromEntries([...value.matchAll(/([\w-]+)="([^"]*)"/g)].map(match => [match[1].toLowerCase(), match[2].trim()]));
@@ -94,6 +94,10 @@ function readPlaylistText(url) {
 module.exports = async function handler(request, response) {
   if (request.method !== "GET") {
     response.status(405).send("Method not allowed");
+    return;
+  }
+  if (!PLAYLIST_URL) {
+    response.status(503).send("Playlist no configurada. Importa un archivo M3U o configura PLAYLIST_URL en el servidor.");
     return;
   }
 

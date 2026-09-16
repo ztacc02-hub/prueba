@@ -227,8 +227,10 @@ function loadChannel(channel) {
     hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
     hls.on(Hls.Events.ERROR, (_, data) => {
       if (!data.fatal) return;
-      if (data.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
-      else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
+      if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+        hls.startLoad();
+        setError("La señal tardó en responder. Reintentando…");
+      } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
       else {
         destroyHls();
         setError("El proxy no recibió una señal válida del proveedor IPTV.");
